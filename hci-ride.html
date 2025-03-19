@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Ride Reservation</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: url('https://i.pinimg.com/736x/7f/5d/c4/7f5dc474e691ad4b41e86d1cb6c9daf5.jpg') no-repeat center center;
+            background-size: cover;
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 20px auto;
+            display: none; /* Initially hidden */
+        }
+
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .hero h1 {
+            font-size: 50px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #ff004c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #e60032;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: white;
+            color: black;
+        }
+
+        .learn-more {
+            position: fixed; /* Keeps it centered on the screen */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none; /* Initially hidden */
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            background: url('https://i.pinimg.com/736x/6d/2e/74/6d2e7419261d5be03bc541db53689b5b.jpg') no-repeat center center/cover;
+            color: white;
+            z-index: 1000;
+        }
+
+        .learn-more::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .learn-more h2, .learn-more ul, .learn-more button {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+        }
+
+        .learn-more ul {
+            list-style: none;
+            padding: 20px;
+            font-size: 18px;
+        }
+
+        .learn-more img {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .btn-back {
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background-color: white;
+            color: black;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover {
+            background-color: #ccc;
+        }
+
+        input, select, button {
+            display: block;
+            width: 90%;
+            padding: 15px;
+            margin: 10px auto;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #ff004c;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            padding: 15px;
+        }
+
+        button:hover {
+            background: #e60032;
+        }
+
+        .vehicle-container {
+    display: flex;
+    flex-direction: row; /* Ensures horizontal alignment */
+    justify-content: center; /* Centers items */
+    align-items: center; /* Aligns them properly */
+    gap: 20px; /* Space between vehicle cards */
+    flex-wrap: nowrap; /* Prevents wrapping */
+    overflow-x: auto; /* Allows scrolling if needed */
+    padding: 20px;
+    white-space: nowrap; /* Prevents items from stacking */
+}
+
+    .vehicle-card {
+    width: 250px; /* Adjust width */
+    display: inline-block; /* Ensures they stay in line */
+    text-align: center;
+}
+
+        .vehicle-card img {
+            width: 100px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #ff8c00;
+        }
+
+        .selected {
+            border: 3px solid #ff004c;
+        }
+
+        .ride-btn {
+            position: relative;
+            z-index: 2;
+            background-color: #ffcc00;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .ride-btn:hover {
+            background-color: #ff9900;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Reliable & Fast Ride Reservation</h1>
+            <p>Book a ride effortlessly with our seamless online reservation system.</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" type="button" onclick="showBookingForm()">Book Now</button>
+                <button class="btn btn-secondary" type="button" onclick="showLearnMore()">Learn More</button>
+            </div>
+        </div>
+    </section>
+    
+    <div class="learn-more" id="learnMoreSection" style="display: none;">
+        <h2>LEARN MORE ABOUT US</h2>
+        <ul>
+            <li><strong>🚗 About Our Ride Reservation:</strong> Fast & Reliable...</li>
+            <li><strong>🌍 Why Choose Us?</strong> User-Friendly Interface...</li>
+            <li><strong>🛒 How It Works?</strong>
+                <ul>
+                    <li>1️⃣ <strong>Sign Up & Login</strong> – Enter your name...</li>
+                    <li>2️⃣ <strong>Enter Ride Details</strong> – Select pickup...</li>
+                    <li>3️⃣ <strong>Choose a Vehicle</strong> – Pick from a car...</li>
+                    <li>4️⃣ <strong>Confirm & Pay</strong> – Select your payment method...</li>
+                    <li>5️⃣ <strong>Enjoy Your Ride!</strong> – Get picked up...</li>
+                </ul>
+            </li>
+        </ul>
+        <button class="btn-back" type="button" onclick="goBack()">Go Back</button>
+    </div>
+    
+    <div class="container" id="customer-info" style="display: none;">
+        <h2>Enter Your Information</h2>
+        <form id="customerForm" onsubmit="saveCustomerInfo(event)">
+            <input type="text" id="name" placeholder="Enter your name" required>
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <button type="submit">ENTER</button>
+        </form>
+    </div>
+
+    <div class="container" id="booking-form" style="display: none;">
+        <h2>Booking Details</h2>
+        <form id="bookingForm" onsubmit="bookRide(event)">
+            <input type="text" id="pickup" placeholder="Pickup Location" required>
+            <input type="text" id="destination" placeholder="Destination" required>
+            <input type="date" id="date" required>
+            <input type="time" id="time" required>
+            <input type="number" id="passengers" placeholder="Number of Passengers" min="1" required>
+
+            <h2>Select Your Vehicle</h2>
+            <div class="vehicle-container">
+                <div class="vehicle-card" data-vehicle="standard" onclick="selectVehicle('standard')">
+                    <img src="https://cdn-icons-png.flaticon.com/256/1048/1048315.png" alt="Standard">
+                    <h3>Standard</h3>
+                    <p>Base Fare: ₱70</p>
+                    <p class="price" id="standardPrice">Total: ₱0</p>
+                </div>
+                <div class="vehicle-card" data-vehicle="group" onclick="selectVehicle('group')">
+                    <img src="https://cdn-icons-png.flaticon.com/256/9638/9638025.png" alt="Group">
+                    <h3>Group</h3>
+                    <p>Base Fare: ₱100</p>
+                    <p class="price" id="groupPrice">Total: ₱0</p>
+                </div>
+                <div class="vehicle-card" data-vehicle="motorcycle" onclick="selectVehicle('motorcycle')">
+                    <img src="https://cdn-icons-png.flaticon.com/256/3085/3085398.png" alt="Motorcycle">
+                    <h3>Motorcycle</h3>
+                    <p>Base Fare: ₱50</p>
+                    <p class="price" id="motorcyclePrice">Total: ₱0</p>
+                </div>
+            </div>
+
+            <select id="payment-method" required>
+                <option value="" disabled selected>Select Payment Method</option>
+                <option value="Cash">Cash</option>
+                <option value="Card">Card</option>
+            </select>
+            <button type="submit">BOOK RIDE</button>
+        </form>
+    </div>
+    
+    <div class="container" id="confirmation" style="display: none;">
+        <h2>Booking Confirmation</h2>
+        <p><strong>Name:</strong> <span id="confirm-name"></span></p>
+        <p><strong>Email:</strong> <span id="confirm-email"></span></p>
+        <p><strong>Pickup Location:</strong> <span id="confirm-pickup"></span></p>
+        <p><strong>Destination:</strong> <span id="confirm-destination"></span></p>
+        <p><strong>Date:</strong> <span id="confirm-date"></span></p>
+        <p><strong>Time:</strong> <span id="confirm-time"></span></p>
+        <p><strong>Passengers:</strong> <span id="confirm-passengers"></span></p>
+        <p><strong>Total Fare:</strong> <span id="confirm-fare"></span></p>
+        <p style="color: green; font-weight: bold;">Thank you for booking your ride!</p>
+        <p style="color: red; font-weight: bold;">PLEASE WAIT FOR YOUR EMAIL CONFIRMATION FROM YOUR RIDER.</p>
+        <p style="color: red; font-weight: bold;">Your payment will be processed after the ride is completed.</p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize EmailJS
+            emailjs.init("F1Hx3A-D2EwTRMxlH");
+    
+            // Hide initial sections
+            ["customer-info", "booking-form", "confirmation", "learnMoreSection"].forEach(id => {
+                document.getElementById(id).style.display = "none";
+            });
+        });
+    
+        let selectedVehicleElement = null; // Global variable to store the selected vehicle
+        let name = '';
+        let email = '';
+    
+        function showBookingForm() {
+            document.querySelector(".hero").style.display = "none";
+            document.getElementById("customer-info").style.display = "block";
+        }
+    
+        function showLearnMore() {
+            document.querySelector(".hero").style.display = "none";
+            document.getElementById("learnMoreSection").style.display = "flex";
+        }
+    
+        function goBack() {
+            document.getElementById("learnMoreSection").style.display = "none";
+            document.querySelector(".hero").style.display = "flex";
+        }
+    
+        function saveCustomerInfo(event) {
+            event.preventDefault();
+            name = document.getElementById("name").value.trim();
+            email = document.getElementById("email").value.trim();
+    
+            if (name && email) {
+                localStorage.setItem("customerName", name);
+                localStorage.setItem("customerEmail", email);
+                document.getElementById("customer-info").style.display = "none";
+                document.getElementById("booking-form").style.display = "block";
+            } else {
+                alert("Please enter your name and email.");
+            }
+        }
+    
+        let baseFares = { standard: 70, group: 100, motorcycle: 50 };
+    
+        function updateFare() {
+            let passengers = parseInt(document.getElementById("passengers").value) || 1;
+            document.getElementById("standardPrice").textContent = `Total: ₱${baseFares.standard * passengers}`;
+            document.getElementById("groupPrice").textContent = `Total: ₱${baseFares.group * passengers}`;
+            document.getElementById("motorcyclePrice").textContent = passengers > 1 ? "Unavailable" : `Total: ₱${baseFares.motorcycle}`;
+        }
+    
+        document.getElementById("passengers").addEventListener("input", updateFare);
+    
+        function selectVehicle(vehicleType) {
+            document.querySelectorAll(".vehicle-card").forEach(card => card.classList.remove("selected"));
+    
+            selectedVehicleElement = document.querySelector(`[data-vehicle="${vehicleType}"]`);
+            if (selectedVehicleElement) {
+                selectedVehicleElement.classList.add("selected");
+            }
+    
+            updateFare();
+        }
+    
+        document.querySelectorAll(".vehicle-card").forEach(card => {
+            card.addEventListener("click", function () {
+                selectVehicle(this.getAttribute("data-vehicle"));
+            });
+        });
+    
+        function bookRide(event) {
+            event.preventDefault(); // Prevents form refresh
+    
+            let pickup = document.getElementById("pickup").value;
+            let destination = document.getElementById("destination").value;
+            let date = document.getElementById("date").value;
+            let time = document.getElementById("time").value;
+            let passengers = parseInt(document.getElementById("passengers").value) || 1;
+    
+            if (!selectedVehicleElement) {
+                alert("Please select a vehicle.");
+                return;
+            }
+    
+            let vehicleType = selectedVehicleElement.getAttribute("data-vehicle");
+    
+            if (vehicleType === "motorcycle" && passengers > 1) {
+                alert("Motorcycle is not available for more than 1 passenger.");
+                return;
+            }
+    
+            let totalFare = baseFares[vehicleType] * passengers;
+    
+            // Prepare email parameters
+            let emailParams = {
+                name: name,
+                email: email,
+                pickup_location: pickup,
+                destination: destination,
+                date: date,
+                time: time,
+                vehicle: vehicleType.charAt(0).toUpperCase() + vehicleType.slice(1),
+                fare: `₱${totalFare}`
+            };
+    
+            // Send Email
+            emailjs.send("service_xjrejas", "template_hl4xo2s", emailParams)
+                .then(function (response) {
+                    console.log("SUCCESS!", response);
+                    alert("Booking successful! Confirmation email sent.");
+                })
+                .catch(function (error) {
+                    console.error("FAILED...", error);
+                    alert("Failed to send email. Please check console.");
+                });
+    
+            // Display confirmation details
+            document.getElementById("confirm-name").textContent = name;
+            document.getElementById("confirm-email").textContent = email;
+            document.getElementById("confirm-pickup").textContent = pickup;
+            document.getElementById("confirm-destination").textContent = destination;
+            document.getElementById("confirm-date").textContent = date;
+            document.getElementById("confirm-time").textContent = time;
+            document.getElementById("confirm-passengers").textContent = passengers;
+            document.getElementById("confirm-fare").textContent = `₱${totalFare}`;
+    
+            // Hide form, show confirmation
+            document.getElementById("booking-form").style.display = "none";
+            document.getElementById("confirmation").style.display = "block";
+        }
+    
+        document.getElementById("booking-form").addEventListener("submit", bookRide);
+    
+    </script>
